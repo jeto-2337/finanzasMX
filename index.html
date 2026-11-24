@@ -15,9 +15,13 @@
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
   h1 { font-size:1.3rem; margin:0 0 4px; } h2 { font-size:1rem; margin:0 0 8px; }
   input, select, button { font:inherit; padding:10px 12px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--text); }
-  button { background:var(--accent); color:#fff; border:0; cursor:pointer; }
-  button.link { background:none; color:var(--muted); padding:0; text-decoration:underline; }
-  .row { display:flex; gap:8px; } .row > input { flex:1; min-width:0; }
+  button { background:var(--accent); color:#0b1514; font-weight:600; border:0; cursor:pointer; }
+  button.secondary { background:var(--bg); color:var(--text); border:1px solid var(--line); font-weight:500; }
+  button.active-mode { background:var(--accent); color:#0b1514; border-color:var(--accent); }
+  button.link { background:none; color:var(--muted); padding:0; text-decoration:underline; font-weight:400; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .row > input, .row > select { flex:1; min-width:140px; }
+  .modes { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
   .muted { color:var(--muted); font-size:.9rem; }
   .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
   .stats b { display:block; font-size:1.15rem; }
@@ -26,7 +30,8 @@
   li:first-child { border-top:0; }
   .neg { color:var(--danger); } .pos { color:var(--accent); }
   .nudge { border-left:3px solid var(--accent); padding-left:10px; margin:6px 0; }
-  .err { color:var(--danger); min-height:1.2em; }
+  .advice-box { border:1px solid var(--line); background:var(--bg); border-radius:10px; padding:12px; margin-top:10px; display:grid; gap:6px; }
+  .err { color:var(--danger); min-height:1.2em; font-size:.9rem; }
   [hidden] { display:none !important; }
 </style>
 </head>
@@ -40,7 +45,7 @@
       <input id="password" type="password" placeholder="Contraseña (mínimo 8 caracteres)" autocomplete="current-password">
       <div class="row">
         <button id="login">Entrar</button>
-        <button id="register" style="background:var(--muted)">Crear cuenta</button>
+        <button id="register" class="secondary">Crear cuenta</button>
       </div>
       <div id="authErr" class="err"></div>
     </div>
@@ -51,10 +56,32 @@
       <div class="row" style="justify-content:space-between;align-items:center">
         <h1>FinanzasMX</h1><button class="link" id="logout">Salir</button>
       </div>
-      <div class="row" style="margin-top:8px">
-        <input id="quick" placeholder="Escribe: gasté 120 en tacos">
-        <button id="add">Agregar</button>
+
+      <div class="modes" role="tablist" aria-label="Tipo de acción">
+        <button type="button" id="modeExpense" class="secondary active-mode">Gasto</button>
+        <button type="button" id="modeIncome" class="secondary">Ingreso</button>
+        <button type="button" id="modeAdvice" class="secondary">Consejo IA</button>
       </div>
+
+      <div id="txForm" style="display:grid;gap:8px;margin-top:10px">
+        <div class="row">
+          <input id="amount" type="number" step="0.01" min="0.01" placeholder="Monto (ej. 120)">
+          <select id="category" aria-label="Categoría"></select>
+        </div>
+        <div class="row">
+          <input id="description" type="text" placeholder="Concepto (ej. tacos, quincena, renta)">
+          <button type="button" id="add">Guardar gasto</button>
+        </div>
+      </div>
+
+      <div id="adviceForm" hidden style="display:grid;gap:8px;margin-top:10px">
+        <div class="row">
+          <input id="adviceTopic" type="text" placeholder="¿En qué te asesoro? (opcional: ahorro, comida, presupuesto)">
+          <button type="button" id="askAdvice">Pedir consejo</button>
+        </div>
+        <div id="adviceBox" class="advice-box" hidden></div>
+      </div>
+
       <div id="err" class="err"></div>
     </section>
 
@@ -77,17 +104,26 @@
 </main>
 
 <script>
+const API_BASE = "https://decrease-muslim-vocal-characteristic.trycloudflare.com/api";
 const CATEGORIES = ["comida","transporte","vivienda","servicios","salud","educacion","entretenimiento","ropa","ahorro","otros"];
 const $ = (id) => document.getElementById(id);
 const money = (n) => "$" + Number(n).toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 let token = null;
+let currentMode = "expense"; // "expense" | "income" | "advice"
+let lastSummary = null;
+let lastTxs = [];
+
 try { token = localStorage.getItem("token"); } catch (e) {}
+
+const catSelect = $("category");
+for (const c of CATEGORIES) catSelect.add(new Option(c, c, false, c === "otros"));
 
 async function api(path, opts = {}) {
   const headers = { ...(opts.headers || {}) };
   if (token) headers.Authorization = "Bearer " + token;
   if (opts.json) { headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.json); }
-  const res = await fetch("https://decrease-muslim-vocal-characteristic.trycloudflare.com/api" + path, { ...opts, headers });
+  const res = await fetch(API_BASE + path, { ...opts, headers });
   if (res.status === 401 && token) { logout(); throw new Error("Sesión expirada"); }
   if (!res.ok) {
     let detail = "Error " + res.status;
@@ -99,7 +135,29 @@ async function api(path, opts = {}) {
 
 function setToken(t) { token = t; try { t ? localStorage.setItem("token", t) : localStorage.removeItem("token"); } catch (e) {} }
 function logout() { setToken(null); show(); }
-function show() { $("auth").hidden = !!token; $("app").hidden = !token; if (token) refresh(); }
+function show() { $("auth").hidden = !!token; $("app").hidden = !token; if (token) { setMode(currentMode); refresh(); } }
+
+function setMode(mode) {
+  currentMode = mode;
+  $("err").textContent = "";
+  $("modeExpense").className = "secondary" + (mode === "expense" ? " active-mode" : "");
+  $("modeIncome").className = "secondary" + (mode === "income" ? " active-mode" : "");
+  $("modeAdvice").className = "secondary" + (mode === "advice" ? " active-mode" : "");
+
+  const isAdvice = mode === "advice";
+  $("txForm").hidden = isAdvice;
+  $("adviceForm").hidden = !isAdvice;
+
+  if (!isAdvice) {
+    $("add").textContent = mode === "income" ? "Guardar ingreso" : "Guardar gasto";
+    $("description").placeholder = mode === "income"
+      ? "Concepto (ej. sueldo, venta, reembolso)"
+      : "Concepto (ej. tacos, camión, recibo de luz)";
+    if (mode === "income" && catSelect.value === "comida") catSelect.value = "otros";
+  } else {
+    renderAdvice();
+  }
+}
 
 async function authenticate(kind) {
   $("authErr").textContent = "";
@@ -115,6 +173,8 @@ async function authenticate(kind) {
 async function refresh() {
   try {
     const [s, txs] = await Promise.all([api("/insights/summary"), api("/transactions")]);
+    lastSummary = s;
+    lastTxs = txs;
     $("income").textContent = money(s.income);
     $("expenses").textContent = money(s.expenses);
     $("surplus").textContent = money(s.surplus);
@@ -123,6 +183,7 @@ async function refresh() {
     const week = s.forecast_next_7_days.reduce((a, b) => a + b, 0);
     $("forecast").textContent = week > 0 ? "Pronóstico de gasto próximos 7 días: " + money(week) : "";
     renderList(txs);
+    if (currentMode === "advice") renderAdvice();
   } catch (e) { $("err").textContent = e.message; }
 }
 
@@ -130,7 +191,8 @@ function renderList(txs) {
   const items = txs.map((t) => {
     const li = document.createElement("li");
     const left = document.createElement("div");
-    left.textContent = t.description || "(sin descripción)";
+    const kindLabel = t.kind === "income" ? "Ingreso" : "Gasto";
+    left.textContent = (t.description || "(sin descripción)") + " · " + kindLabel;
     const meta = document.createElement("div");
     meta.className = "muted";
     meta.textContent = t.occurred_on + (t.anomaly ? " · ⚠ gasto inusual" : "");
@@ -157,19 +219,125 @@ function renderList(txs) {
   $("list").replaceChildren(...items);
 }
 
-async function quickAdd() {
-  const text = $("quick").value.trim();
-  if (!text) return;
+async function saveTransaction() {
   $("err").textContent = "";
-  try { await api("/transactions/quick", { method: "POST", json: { text } }); $("quick").value = ""; refresh(); }
-  catch (e) { $("err").textContent = e.message; }
+  const amount = parseFloat($("amount").value);
+  const category = catSelect.value;
+  const description = $("description").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    $("err").textContent = "Ingresa un monto mayor a 0.";
+    return;
+  }
+  if (!description) {
+    $("err").textContent = "Escribe un concepto para identificar el movimiento.";
+    return;
+  }
+
+  try {
+    await api("/transactions", {
+      method: "POST",
+      json: {
+        kind: currentMode === "income" ? "income" : "expense",
+        amount,
+        description,
+        category,
+      },
+    });
+    $("amount").value = "";
+    $("description").value = "";
+    refresh();
+  } catch (e) {
+    $("err").textContent = e.message;
+  }
 }
+
+function buildAdvice(s, txs, topic) {
+  const tips = [];
+  if (!s) return ["Aún no hay resumen del mes cargado. Intenta actualizar o registrar movimientos."];
+
+  const income = Number(s.income || 0);
+  const expenses = Number(s.expenses || 0);
+  const surplus = Number(s.surplus || 0);
+  const weekForecast = (s.forecast_next_7_days || []).reduce((a, b) => a + b, 0);
+  const cats = Object.entries(s.by_category || {});
+
+  if (surplus < 0) {
+    tips.push(`Tus gastos (${money(expenses)}) superan tus ingresos (${money(income)}) por ${money(Math.abs(surplus))}. Prioriza cubrir esenciales y pausa compras no urgentes esta semana.`);
+  } else if (surplus > 0) {
+    const reserve = surplus * 0.3;
+    tips.push(`Tienes un excedente de ${money(surplus)}. Considera apartar al menos ${money(reserve)} para ahorro/emergencias o inversión de bajo riesgo (como Cetes) antes de gastarlo.`);
+  } else {
+    tips.push("Tu balance del mes está en ceros. Define un tope diario o semanal para que cualquier imprevisto no te deje en déficit.");
+  }
+
+  if (cats.length > 0) {
+    const [topCat, topVal] = cats[0];
+    const pct = income > 0 ? Math.round((topVal / income) * 100) : null;
+    tips.push(
+      pct !== null
+        ? `Tu mayor categoría de gasto este mes es "${topCat}" con ${money(topVal)} (${pct}% de tus ingresos).`
+        : `Tu mayor categoría de gasto este mes es "${topCat}" con ${money(topVal)}.`
+    );
+  }
+
+  if (weekForecast > 0) {
+    tips.push(`El pronóstico para los próximos 7 días es de ${money(weekForecast)} en gastos. Procura mantener tus compras diarias por debajo de ese ritmo.`);
+  }
+
+  const anomalies = (txs || []).filter((t) => t.anomaly);
+  if (anomalies.length > 0) {
+    tips.push(`Se detectaron ${anomalies.length} gasto(s) inusual(es) frente a tu historial (por ejemplo: "${anomalies[0].description || anomalies[0].category}"). Revísalos para confirmar si fueron puntuales.`);
+  }
+
+  const cleanTopic = (topic || "").trim().toLowerCase();
+  if (cleanTopic) {
+    if (cleanTopic.includes("ahorr") || cleanTopic.includes("cetes") || cleanTopic.includes("invert")) {
+      tips.push("Enfoque en ahorro: aplica la regla de 'pagarte a ti primero' en cuanto entre un ingreso, separando un porcentaje fijo en una cuenta o instrumento aparte.");
+    } else if (cleanTopic.includes("comid") || cleanTopic.includes("tacos") || cleanTopic.includes("hormiga")) {
+      tips.push("Enfoque en gastos cotidianos: agrupa comidas o compras pequeñas en un presupuesto semanal y evita registrarlas sin categoría clara.");
+    } else if (cleanTopic.includes("presupuest") || cleanTopic.includes("deuda") || cleanTopic.includes("plan")) {
+      tips.push("Enfoque en presupuesto: clasifica primero vivienda, servicios y comida, y asigna un límite fijo a entretenimiento y compras variables.");
+    } else {
+      tips.push(`Sobre "${topic.trim()}": compara el costo con tu excedente actual (${money(surplus)}) y verifica si entra en tu presupuesto sin comprometer gastos fijos.`);
+    }
+  }
+
+  if (Array.isArray(s.nudges) && s.nudges.length > 0) {
+    for (const n of s.nudges) {
+      if (!tips.includes(n)) tips.push(n);
+    }
+  }
+
+  return tips;
+}
+
+function renderAdvice() {
+  const box = $("adviceBox");
+  const tips = buildAdvice(lastSummary, lastTxs, $("adviceTopic").value);
+  box.hidden = false;
+  box.replaceChildren(
+    ...tips.map((t) => {
+      const p = document.createElement("div");
+      p.className = "nudge";
+      p.textContent = t;
+      return p;
+    })
+  );
+}
+
+$("modeExpense").onclick = () => setMode("expense");
+$("modeIncome").onclick = () => setMode("income");
+$("modeAdvice").onclick = () => setMode("advice");
+$("add").onclick = saveTransaction;
+$("askAdvice").onclick = () => { $("err").textContent = ""; renderAdvice(); };
+$("description").addEventListener("keydown", (e) => { if (e.key === "Enter") saveTransaction(); });
+$("amount").addEventListener("keydown", (e) => { if (e.key === "Enter") saveTransaction(); });
+$("adviceTopic").addEventListener("keydown", (e) => { if (e.key === "Enter") { $("err").textContent = ""; renderAdvice(); } });
 
 $("login").onclick = () => authenticate("login");
 $("register").onclick = () => authenticate("register");
 $("logout").onclick = logout;
-$("add").onclick = quickAdd;
-$("quick").addEventListener("keydown", (e) => { if (e.key === "Enter") quickAdd(); });
 show();
 </script>
 </body>
