@@ -87,7 +87,7 @@ async function api(path, opts = {}) {
   const headers = { ...(opts.headers || {}) };
   if (token) headers.Authorization = "Bearer " + token;
   if (opts.json) { headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(opts.json); }
-  const res = await fetch("https://cardiff-canal-she-math.trycloudflare.com/api" + path, { ...opts, headers });
+  const res = await fetch("https://decrease-muslim-vocal-characteristic.trycloudflare.com/api" + path, { ...opts, headers });
   if (res.status === 401 && token) { logout(); throw new Error("Sesión expirada"); }
   if (!res.ok) {
     let detail = "Error " + res.status;
