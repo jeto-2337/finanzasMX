@@ -1,0 +1,459 @@
+/* ============================================
+   📱 responsive.css - Estilos Responsive Completos
+   Compatible con: index.php, reproduction.php, free.php, pago.php
+   ============================================ */
+
+/* ========== RESET Y VARIABLES GLOBALES ========== */
+:root {
+    --bg-main: #0d1117;
+    --bg-card: #161b22;
+    --accent: #8b5cf6;
+    --accent-hover: #7c3aed;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --border: #30363d;
+    --warning: #f97316;
+    --success: #2ea043;
+    --danger: #ef4444;
+    
+    /* Espaciados responsive */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    
+    /* Breakpoints */
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1440px;
+}
+
+/* ========== UTILIDADES RESPONSIVE ========== */
+.hide-on-mobile {
+    display: inline-block;
+}
+
+.show-on-mobile {
+    display: none;
+}
+
+.text-center-mobile {
+    text-align: inherit;
+}
+
+/* ========== BASE RESPONSIVE ========== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+img, audio, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ========== NAVEGACIÓN RESPONSIVE ========== */
+.navbar, .nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.nav-buttons, .user-controls {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ========== TARJETAS Y GRIDS ========== */
+.book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+
+.book-card, .audio-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.book-card:hover, .audio-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+}
+
+/* ========== REPRODUCTOR DE AUDIO ========== */
+.player-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px 40px 20px;
+}
+
+audio {
+    width: 100%;
+    border-radius: 12px;
+    outline: none;
+}
+
+/* ========== BOTONES ========== */
+.Button, .btn, .btn-logout, .btn-premium {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-premium {
+    background: linear-gradient(135deg, #ffb731, #ffa000);
+    color: #000;
+    font-weight: bold;
+    border: none;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 183, 49, 0.3);
+}
+
+/* ========== BANNERS ========== */
+.expiration-banner {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 20px;
+    margin: 0 20px 20px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.warning-banner {
+    background: rgba(249, 115, 22, 0.15);
+    border-color: var(--warning);
+}
+
+/* ========== TÍTULOS RESPONSIVE ========== */
+h1 {
+    font-size: clamp(1.2rem, 5vw, 2rem);
+    text-align: center;
+    margin: 20px 0;
+    padding: 0 20px;
+    word-break: break-word;
+}
+
+h2 {
+    font-size: clamp(1rem, 4vw, 1.5rem);
+}
+
+/* ============================================
+   📱 MEDIA QUERIES PRINCIPALES
+   ============================================ */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+    .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+    
+    .container {
+        padding: 0 20px;
+    }
+}
+
+/* Tablets pequeñas (768px) */
+@media (max-width: 768px) {
+    /* Navegación */
+    .navbar, .nav-header {
+        padding: 0.8rem 4%;
+    }
+    
+    .Button, .btn, .btn-logout, .btn-premium {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    /* Grids */
+    .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+    
+    /* Banners */
+    .expiration-banner {
+        margin: 0 15px 15px 15px;
+        padding: 10px 15px;
+        font-size: 0.85rem;
+    }
+    
+    /* Reproductor */
+    .player-container {
+        padding: 0 15px 30px 15px;
+    }
+    
+    .audio-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    /* Contenedores */
+    .container {
+        padding: 0 15px;
+    }
+}
+
+/* Móviles grandes (600px) */
+@media (max-width: 600px) {
+    .book-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .book-details {
+        padding: 10px;
+    }
+    
+    .book-title {
+        font-size: 0.85rem;
+    }
+}
+
+/* Móviles (480px) */
+@media (max-width: 480px) {
+    /* Navegación en columna */
+    .navbar, .nav-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 0.8rem 3%;
+    }
+    
+    .nav-buttons, .user-controls {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .Button, .btn, .btn-logout, .btn-premium {
+        padding: 10px 12px;
+        font-size: 0.8rem;
+        flex: 1;
+        justify-content: center;
+        min-height: 44px; /* Mejor touch target */
+    }
+    
+    /* Banners en columna */
+    .expiration-banner {
+        flex-direction: column;
+        text-align: center;
+        margin: 0 12px 15px 12px;
+    }
+    
+    /* Grids */
+    .book-grid {
+        gap: 10px;
+    }
+    
+    /* Reproductor */
+    .player-container {
+        padding: 0 12px 20px 12px;
+    }
+    
+    .audio-card {
+        padding: 12px;
+    }
+    
+    .audio-title {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    /* Utilidades */
+    .hide-on-mobile {
+        display: none;
+    }
+    
+    .show-on-mobile {
+        display: inline-block;
+    }
+    
+    .text-center-mobile {
+        text-align: center;
+    }
+}
+
+/* Móviles muy pequeños (380px) */
+@media (max-width: 380px) {
+    .nav-buttons, .user-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .Button, .btn, .btn-logout, .btn-premium {
+        width: 100%;
+    }
+    
+    .book-grid {
+        gap: 8px;
+    }
+    
+    .book-title {
+        font-size: 0.75rem;
+    }
+    
+    .expiration-banner {
+        font-size: 0.75rem;
+    }
+}
+
+/* ============================================
+   🌅 ORIENTATION (Landscape)
+   ============================================ */
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar, .nav-header {
+        padding: 0.5rem 3%;
+    }
+    
+    h1 {
+        margin: 10px 0;
+        font-size: 1.2rem;
+    }
+    
+    .book-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .player-container {
+        padding: 0 15px 15px 15px;
+    }
+    
+    .audio-card {
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+}
+
+/* ============================================
+   🖥️ PANTALLAS GRANDES
+   ============================================ */
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px;
+    }
+    
+    .player-container {
+        max-width: 1000px;
+    }
+}
+
+/* 4K y superiores */
+@media (min-width: 2560px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    .book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 35px;
+    }
+    
+    body {
+        font-size: 1.1rem;
+    }
+}
+
+/* ============================================
+   🎯 ACCESIBILIDAD
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .book-card:hover, .audio-card:hover {
+        transform: none;
+    }
+}
+
+/* Alto contraste (si el usuario lo prefiere) */
+@media (prefers-contrast: high) {
+    :root {
+        --bg-main: #000;
+        --bg-card: #111;
+        --border: #fff;
+        --accent: #b77cff;
+    }
+}
+
+/* ============================================
+   🔧 UTILIDADES ADICIONALES
+   ============================================ */
+/* Scroll suave solo si no hay preferencia reducida */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Ocultar scrollbar en móvil pero mantener funcionalidad */
+@media (max-width: 768px) {
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Mejorar touch targets en móvil */
+@media (max-width: 768px) {
+    button, 
+    .Button, 
+    .btn, 
+    a[role="button"],
+    .audio-card {
+        cursor: pointer;
+    }
+    
+    /* Evitar zoom en inputs en iOS */
+    input, select, textarea {
+        font-size: 16px;
+    }
+}

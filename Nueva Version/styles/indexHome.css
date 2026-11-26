@@ -1,0 +1,121 @@
+:root {
+    --primary: #8b5cf6;
+    --bg-dark: #0f172a;
+    --glass: rgba(30, 41, 59, 0.7);
+    --text: #f8fafc;
+}
+
+body.login-body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+}
+
+/* --- LOGO: Animación que despeja el área central --- */
+.logo-wrapper {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1; /* Por debajo del formulario al finalizar */
+    animation: moveToTop 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.icon-logo {
+    width: 350px;
+    /* Fusión: el fondo negro de tu imagen desaparece mágicamente */
+    mix-blend-mode: screen; 
+    filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+}
+
+@keyframes moveToTop {
+    0% { top: 40%; width: 350px; opacity: 0; }
+    25% { opacity: 1; }
+    /* El logo se queda arriba del todo para no obstruir */
+    100% { top: 2%; width: 140px; } 
+}
+
+/* --- FORMULARIO: Diseño Glassmorphism --- */
+.login-form {
+    background: var(--glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3rem 2.5rem;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    z-index: 10;
+    
+    /* Retraso para que el logo se mueva primero */
+    opacity: 0;
+    transform: translateY(30px);
+    animation: formAppear 1s ease 1.6s forwards;
+}
+
+@keyframes formAppear {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1 { font-size: 1.7rem; margin-bottom: 2rem; color: var(--text); font-weight: 600; }
+
+.input-container { margin-bottom: 1.25rem; }
+
+.input-field {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary);
+    border: none;
+    border-radius: 14px;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4);
+    filter: brightness(1.1);
+}
+
+.link-secondary {
+    display: inline-block;
+    margin-top: 25px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.link-secondary:hover { color: var(--text); }
+
+/* Banner inferior */
+.footer-banner { margin-top: 40px; opacity: 0.5; font-size: 11px; }
+.gtts-brand { font-size: 26px; font-weight: 900; margin-top: 5px; letter-spacing: 1px; }
+.b { color: #4285F4; } .r { color: #EA4335; } .y { color: #FBBC05; } .g { color: #34A853; }

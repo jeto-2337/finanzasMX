@@ -1,0 +1,26 @@
+  .b {
+            color: #4285F4;
+        }
+
+        .r {
+            color: #EA4335;
+        }
+
+        .y {
+            color: #FBBC05;
+        }
+
+        .g {
+            color: #34A853;
+        }
+
+        .google {
+            font-weight: normal;
+        }
+
+        .gtts {
+            font-size: 50px;
+            display: inline-flex;
+            font-family: Product Sans, sans-serif;
+        }
+    
